@@ -1,19 +1,19 @@
-using StrategyPattern.Interfaces;
-using StrategyPattern.PaymentStrategies;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
+using StrategyPattern.Moudules;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
-builder.Services.AddScoped<CreditCardPaymentStrategy>();
-builder.Services.AddScoped<PayPalPaymentStrategy>();
 
-builder.Services.AddScoped<IDictionary<string, IPaymentStrategy>>(serviceProvider =>
-        new Dictionary<string, IPaymentStrategy>
+
+builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
+        builder.Host.ConfigureContainer<ContainerBuilder>(builder =>
         {
-            { "CreditCard", serviceProvider.GetService<CreditCardPaymentStrategy>() },
-            { "PayPal", serviceProvider.GetService<PayPalPaymentStrategy>() }
+            builder.RegisterModule(new PaymentModule(builder));
         });
+
 
 var app = builder.Build();
 
